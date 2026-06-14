@@ -60,6 +60,15 @@ class StudentController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
+        // Get recent feedback (for dashboard widget)
+        $recentFeedback = Feedback::with(['submission.assignment', 'teacher'])
+            ->whereHas('submission', function($query) use ($studentId) {
+                $query->where('student_id', $studentId);
+            })
+            ->orderBy('created_at', 'desc')
+            ->limit(4)
+            ->get();
+
         // Get upcoming assignments (not yet submitted)
         $enrolledCourseIds = $myCourses->pluck('course_id')->toArray();
 
@@ -82,7 +91,8 @@ class StudentController extends Controller
             'pendingSubmissions',
             'averageGrade',
             'mySubmissions',
-            'upcomingAssignments'
+            'upcomingAssignments',
+            'recentFeedback'
         ));
     }
 
@@ -101,7 +111,7 @@ class StudentController extends Controller
         // Get recommended courses (courses the student is not enrolled in)
         $enrolledCourseIds = $enrollments->pluck('course_id')->toArray();
         $recommendedCourses = Course::whereNotIn('course_id', $enrolledCourseIds)
-            ->where('status', 'active')
+            ->where('status', 'Active')
             ->limit(3)
             ->get();
 
@@ -137,7 +147,6 @@ class StudentController extends Controller
     {
         $studentId = Auth::user()->user_id;
 
-        // Use 'grader' instead of 'gradedBy' (or make sure gradedBy exists in Grade model)
         $grades = Grade::with(['submission.assignment.course', 'grader'])
             ->whereHas('submission', function($query) use ($studentId) {
                 $query->where('student_id', $studentId);
@@ -170,6 +179,7 @@ class StudentController extends Controller
 
     /**
      * Display student's feedback
+     * Note: This method returns the view for student.my-feedback route
      */
     public function myFeedback()
     {
@@ -182,7 +192,8 @@ class StudentController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
-        return view('student.feedback', compact('feedbacks'));
+        // View name must match resources/views/student/my-feedback.blade.php
+        return view('student.my-feedback', compact('feedbacks'));
     }
 
     /**
@@ -220,7 +231,7 @@ class StudentController extends Controller
     }
 
     /**
-     * Get student's progress for a specific course
+     * Get student's progress for a specific course (AJAX)
      */
     public function courseProgress($courseId)
     {

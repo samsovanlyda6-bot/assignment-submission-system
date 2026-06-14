@@ -18,8 +18,11 @@
                         <a href="{{ route('student.dashboard') }}" class="list-group-item list-group-item-action border-0 rounded-0 py-3 active" style="background: #0D6EFD; color: white;">
                             <i class="fas fa-tachometer-alt fa-fw me-2"></i> Dashboard
                         </a>
-                        <a href="{{ route('student.my-courses') }}" class="list-group-item list-group-item-action border-0 rounded-0 py-3">
-                            <i class="fas fa-book-open fa-fw me-2"></i> My Courses
+                        <a href="{{ route('courses.index') }}" class="list-group-item list-group-item-action border-0 rounded-0 py-3">
+                            <i class="fas fa-book-open fa-fw me-2"></i> Courses
+                        </a>
+                        <a href="{{ route('assignments.index') }}" class="list-group-item list-group-item-action border-0 rounded-0 py-3">
+                            <i class="fas fa-tasks fa-fw me-2"></i> Assignments
                         </a>
                         <a href="{{ route('student.submissions.index') }}" class="list-group-item list-group-item-action border-0 rounded-0 py-3">
                             <i class="fas fa-upload fa-fw me-2"></i> My Submissions
@@ -27,15 +30,12 @@
                         <a href="{{ route('student.my-grades') }}" class="list-group-item list-group-item-action border-0 rounded-0 py-3">
                             <i class="fas fa-medal fa-fw me-2"></i> My Grades
                         </a>
-                        <a href="{{ route('assignments.index') }}" class="list-group-item list-group-item-action border-0 rounded-0 py-3">
-                            <i class="fas fa-list-check fa-fw me-2"></i> All Assignments
+                        <!-- Feedback link -->
+                        <a href="{{ route('student.my-feedback') }}" class="list-group-item list-group-item-action border-0 rounded-0 py-3">
+                            <i class="fas fa-comment-dots fa-fw me-2"></i> Feedback
                         </a>
-                        <a href="{{ route('courses.index') }}" class="list-group-item list-group-item-action border-0 rounded-0 py-3">
-                            <i class="fas fa-compass fa-fw me-2"></i> Browse Courses
-                        </a>
-                        <hr class="my-2 mx-3">
                         <a href="{{ route('profile.index') }}" class="list-group-item list-group-item-action border-0 rounded-0 py-3">
-                            <i class="fas fa-user-circle fa-fw me-2"></i> My Profile
+                            <i class="fas fa-user-circle fa-fw me-2"></i> Profile
                         </a>
                         <a href="{{ route('notifications.index') }}" class="list-group-item list-group-item-action border-0 rounded-0 py-3">
                             <i class="fas fa-bell fa-fw me-2"></i> Notifications
@@ -43,31 +43,19 @@
                                 <span class="badge bg-danger rounded-pill ms-2">{{ $unreadNotifications }}</span>
                             @endif
                         </a>
-                    </div>
-                </div>
-
-                <!-- Quick Stats in Sidebar -->
-                <div class="card-footer bg-white border-0 pt-2 pb-4">
-                    <hr class="mb-3">
-                    <div class="small text-muted">
-                        <div class="d-flex justify-content-between mb-3">
-                            <span><i class="fas fa-book fa-fw me-1"></i> Enrolled:</span>
-                            <span class="fw-bold text-primary">{{ $myCourses->count() }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between mb-3">
-                            <span><i class="fas fa-paper-plane fa-fw me-1"></i> Submissions:</span>
-                            <span class="fw-bold text-success">{{ $totalSubmissions }}</span>
-                        </div>
-                        <div class="d-flex justify-content-between">
-                            <span><i class="fas fa-chart-line fa-fw me-1"></i> Avg. Grade:</span>
-                            <span class="fw-bold text-info">{{ round($averageGrade) }}%</span>
-                        </div>
+                        <a href="{{ route('logout') }}" class="list-group-item list-group-item-action border-0 rounded-0 py-3 text-danger"
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="fas fa-sign-out-alt fa-fw me-2"></i> Logout
+                        </a>
+                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                            @csrf
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Main Content -->
+        <!-- Main Content (unchanged – everything below remains the same) -->
         <div class="col-md-9 col-lg-10">
             <!-- Welcome Section -->
             <div class="row mb-4">
@@ -215,7 +203,7 @@
             </div>
 
             <!-- Recent Submissions Section -->
-            <div class="row">
+            <div class="row mb-5">
                 <div class="col-12">
                     <div class="card shadow-sm border-0 rounded-4">
                         <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
@@ -263,7 +251,7 @@
                                                     <a href="{{ route('submissions.show', $submission->submission_id) }}" class="text-decoration-none fw-semibold" style="font-size: 0.8rem; color: #1a1a2e;">
                                                         {{ Str::limit($submission->assignment->title ?? 'N/A', 30) }}
                                                     </a>
-                                                </td>
+                                                 </td>
                                                 <td style="padding: 12px 8px; font-size: 0.75rem;">{{ $submission->assignment->course->course_name ?? 'N/A' }}</td>
                                                 <td style="padding: 12px 8px; font-size: 0.75rem;">
                                                     <i class="fas fa-calendar-alt text-muted me-1"></i>
@@ -308,6 +296,63 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Recent Feedback Section -->
+            <div class="row mb-5">
+                <div class="col-12">
+                    <div class="card shadow-sm border-0 rounded-4">
+                        <div class="card-header bg-transparent border-0 pt-4 pb-2 px-4">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <h5 class="fw-bold mb-0" style="font-size: 1rem;">
+                                    <i class="fas fa-comment-dots text-info me-2"></i> Recent Feedback
+                                </h5>
+                                <a href="{{ route('student.my-feedback') }}" class="btn btn-sm btn-outline-info" style="font-size: 0.75rem; border-radius: 20px;">
+                                    View All <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body p-4 pt-2">
+                            @if(isset($recentFeedback) && $recentFeedback->count() > 0)
+                                <div class="row g-4">
+                                    @foreach($recentFeedback->take(4) as $feedback)
+                                    <div class="col-md-6">
+                                        <div class="card h-100 border-0 shadow-sm feedback-card">
+                                            <div class="card-body p-3">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div>
+                                                        <h6 class="fw-bold mb-1" style="font-size: 0.85rem;">
+                                                            {{ $feedback->submission->assignment->title ?? 'N/A' }}
+                                                        </h6>
+                                                        <p class="text-muted small mb-0" style="font-size: 0.7rem;">
+                                                            <i class="fas fa-chalkboard-user me-1"></i> Teacher: {{ $feedback->teacher->full_name ?? 'N/A' }}
+                                                        </p>
+                                                    </div>
+                                                    <span class="badge bg-light text-muted" style="font-size: 0.6rem;">
+                                                        {{ $feedback->created_at->diffForHumans() }}
+                                                    </span>
+                                                </div>
+                                                <div class="bg-light p-2 rounded-3 mt-2">
+                                                    <p class="small mb-0" style="font-size: 0.75rem; line-height: 1.4;">
+                                                        <i class="fas fa-quote-left text-muted me-1"></i>
+                                                        {{ Str::limit($feedback->comment, 100) }}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                </div>
+                            @else
+                                <div class="text-center py-4">
+                                    <i class="fas fa-comments fa-2x text-muted mb-2 opacity-25"></i>
+                                    <p class="text-muted mb-0" style="font-size: 0.8rem;">No feedback received yet.</p>
+                                    <p class="text-muted small">When teachers give feedback on your submissions, it will appear here.</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -316,7 +361,6 @@
     .bg-gradient-primary {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
-
     .hover-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
@@ -324,7 +368,6 @@
         transform: translateY(-5px);
         box-shadow: 0 10px 25px rgba(0,0,0,0.1) !important;
     }
-
     .course-card {
         transition: all 0.3s ease;
         border-radius: 12px;
@@ -333,69 +376,60 @@
         transform: translateY(-5px);
         box-shadow: 0 12px 28px rgba(0,0,0,0.12) !important;
     }
-
+    .feedback-card {
+        transition: all 0.2s ease;
+        border-radius: 12px;
+    }
+    .feedback-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.1) !important;
+    }
     .table-hover tbody tr:hover {
         background-color: rgba(102, 126, 234, 0.04);
     }
-
     .badge {
         font-weight: 500;
     }
-
-    /* Sidebar Styling */
     .list-group-item {
         transition: all 0.25s ease;
         font-size: 0.8rem;
         border: none;
     }
-
     .list-group-item:not(.active):hover {
         background-color: #f8fafc;
         color: #0D6EFD;
         padding-left: 28px;
     }
-
     .list-group-item.active {
         background: #0D6EFD;
         color: white;
         box-shadow: 0 2px 8px rgba(13, 110, 253, 0.3);
     }
-
-    /* Sticky Sidebar */
     .sticky-top {
         position: sticky;
         top: 20px;
         z-index: 100;
     }
-
-    /* Responsive */
     @media (max-width: 768px) {
         .sticky-top {
             position: relative;
             top: 0;
             margin-bottom: 1rem;
         }
-
         .container-fluid {
             padding-left: 16px;
             padding-right: 16px;
         }
-
         h2 {
             font-size: 1.25rem !important;
         }
-
         .row.g-4 {
             --bs-gutter-y: 1rem;
         }
     }
-
-    /* Better spacing for cards */
     .card-body {
         transition: all 0.2s ease;
     }
-
-    /* Improved typography */
     .small, small {
         line-height: 1.5;
     }

@@ -25,11 +25,11 @@ require __DIR__.'/auth.php';
 // ==================== PROTECTED ROUTES ====================
 Route::middleware(['auth'])->group(function () {
 
-    // ==================== DASHBOARD ROUTES ====================
+    // ==================== DASHBOARD ROUTES (with role protection) ====================
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
-    Route::get('/teacher/dashboard', [DashboardController::class, 'teacherDashboard'])->name('teacher.dashboard');
-    Route::get('/student/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard');
+    Route::get('/admin/dashboard', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard')->middleware('role:admin');
+    Route::get('/teacher/dashboard', [DashboardController::class, 'teacherDashboard'])->name('teacher.dashboard')->middleware('role:teacher');
+    Route::get('/student/dashboard', [StudentController::class, 'dashboard'])->name('student.dashboard')->middleware('role:student');
 
     // ==================== COURSE ROUTES ====================
     Route::prefix('courses')->name('courses.')->group(function () {
@@ -80,7 +80,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/download/{id}', [SubmissionController::class, 'downloadFile'])->name('download');
     });
 
-    // ==================== FEEDBACK ROUTES ====================
+    // ==================== FEEDBACK ROUTES (Main) ====================
     Route::prefix('feedbacks')->name('feedbacks.')->group(function () {
         Route::get('/', [FeedbackController::class, 'index'])->name('index');
         Route::get('/create', [FeedbackController::class, 'create'])->name('create');
@@ -134,6 +134,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/grades/submission/{submission_id}/edit', [GradeController::class, 'edit'])->name('grades.edit');
         Route::put('/grades/submission/{submission_id}', [GradeController::class, 'update'])->name('grades.update');
 
+        // Teacher feedback routes (submission-specific)
         Route::prefix('feedbacks')->name('feedbacks.')->group(function () {
             Route::get('/submission/{submission_id}', [FeedbackController::class, 'index'])->name('index');
             Route::post('/submission/{submission_id}', [FeedbackController::class, 'store'])->name('store');

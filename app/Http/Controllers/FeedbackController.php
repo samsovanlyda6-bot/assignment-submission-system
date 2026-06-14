@@ -16,14 +16,20 @@ class FeedbackController extends Controller
 
     /**
      * Display a listing of feedback (Teacher/Admin view).
+     * Accepts optional submission_id from route (teacher view) or query string.
      */
-    public function index(Request $request)
+    public function index(Request $request, $submission_id = null)
     {
-        $submission_id = $request->get('submission_id');
+        // Redirect students away from main feedback list
+        if (Auth::user()->role_id == 3) {
+            return redirect()->route('student.my-feedback');
+        }
+
+        $submissionId = $submission_id ?? $request->get('submission_id');
 
         $feedbacks = Feedback::with('submission.student', 'submission.assignment', 'teacher')
-            ->when($submission_id, function ($query, $submission_id) {
-                return $query->where('submission_id', $submission_id);
+            ->when($submissionId, function ($query, $submissionId) {
+                return $query->where('submission_id', $submissionId);
             })
             ->when(Auth::user()->role_id == 2, function ($query) {
                 // Teachers only see feedback for their own courses
@@ -72,9 +78,13 @@ class FeedbackController extends Controller
 
     /**
      * Store a newly created feedback.
+     * Accepts optional submission_id from route (teacher view).
      */
-    public function store(Request $request)
+    public function store(Request $request, $submission_id = null)
     {
+        $submissionId = $submission_id ?? $request->input('submission_id');
+        $request->merge(['submission_id' => $submissionId]);
+
         $request->validate([
             'submission_id' => 'required|exists:submissions,submission_id',
             'comment' => 'required|string|min:3'
@@ -115,8 +125,8 @@ class FeedbackController extends Controller
         $feedback = Feedback::with('submission.student', 'submission.assignment.course', 'teacher')
             ->findOrFail($id);
 
-        // Check permission
-        if (Auth::user()->role_id != 1 && Auth::user()->role_id != 2) {
+        // Check permission: admin/teacher can view any, students only their own
+        if (Auth::user()->role_id == 3) {
             if ($feedback->submission->student_id != Auth::user()->user_id) {
                 return redirect()->route('dashboard')
                     ->with('error', 'You do not have permission to view this feedback.');
@@ -198,11 +208,15 @@ class FeedbackController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
-        return view('student.feedback', compact('feedbacks'));
+        // View name must match resources/views/student/my-feedback.blade.php
+        return view('student.my-feedback', compact('feedbacks'));
     }
 
     /**
      * Display feedback for a specific submission (Teacher view).
+     * NOTE: This method is currently NOT mapped to any route.
+     * If you don't need it, you can safely remove it.
+     * To use it, add a route: Route::get('/feedbacks/submission/{submission_id}', [FeedbackController::class, 'bySubmission']);
      */
     public function bySubmission($submission_id)
     {

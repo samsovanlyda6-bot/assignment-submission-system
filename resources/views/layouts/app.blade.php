@@ -235,25 +235,10 @@
             </button>
 
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('dashboard*') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                            <i class="fas fa-chart-line me-1"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('courses*') ? 'active' : '' }}" href="{{ route('courses.index') }}">
-                            <i class="fas fa-book me-1"></i> Courses
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('assignments*') ? 'active' : '' }}" href="{{ route('assignments.index') }}">
-                            <i class="fas fa-tasks me-1"></i> Assignments
-                        </a>
-                    </li>
-                </ul>
+                <!-- Removed Dashboard, Courses, Assignments links -->
 
-                <ul class="navbar-nav align-items-center">
+                <!-- Right side user menu only -->
+                <ul class="navbar-nav ms-auto">
                     @auth
                         @if(Auth::user()->role_id == 1)
                         <li class="nav-item dropdown">

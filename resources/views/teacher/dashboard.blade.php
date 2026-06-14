@@ -5,7 +5,7 @@
 @section('content')
 <div class="dashboard-container">
     <div class="dashboard-layout">
-        <!-- Sidebar - Only Navigation -->
+        <!-- Sidebar (unchanged) -->
         <aside class="dashboard-sidebar">
             <div class="sidebar-header">
                 <div class="avatar-circle">
@@ -51,7 +51,6 @@
                 </a>
             </nav>
 
-            <!-- Sidebar Footer Stats -->
             <div class="sidebar-footer">
                 <hr class="mx-3">
                 <div class="px-3 pb-3">
@@ -71,7 +70,7 @@
 
         <!-- Main Content -->
         <main class="dashboard-main">
-            <!-- Welcome Banner -->
+            <!-- Welcome Banner (unchanged) -->
             <div class="welcome-banner mb-4">
                 <div class="row align-items-center">
                     <div class="col-md-8">
@@ -86,7 +85,7 @@
                 </div>
             </div>
 
-            <!-- Stats Cards -->
+            <!-- Stats Cards (unchanged) -->
             <div class="stats-grid mb-4">
                 <div class="stat-card">
                     <div class="stat-icon bg-primary"><i class="fas fa-book-open"></i></div>
@@ -106,7 +105,7 @@
                 </div>
             </div>
 
-            <!-- My Courses Section -->
+            <!-- IMPROVED MY COURSES SECTION -->
             <div class="section-card mb-4">
                 <div class="section-header">
                     <h5><i class="fas fa-book-open me-2 text-primary"></i> My Courses</h5>
@@ -114,34 +113,67 @@
                         <i class="fas fa-plus me-1"></i> New Course
                     </a>
                 </div>
-                <div class="row g-3">
+                <div class="row g-4">
                     @forelse($myCourses as $course)
+                        @php
+                            $totalAssignments = $course->assignments->count();
+                            $publishedAssignments = $course->assignments->where('status', 'Published')->count();
+                            $enrolledCount = $course->enrollments->count();
+                            $progress = $totalAssignments > 0 ? round(($publishedAssignments / $totalAssignments) * 100) : 0;
+                        @endphp
                         <div class="col-md-6 col-lg-4">
-                            <div class="course-card">
-                                <div class="d-flex justify-content-between mb-2">
+                            <div class="course-card h-100">
+                                <div class="course-card-header">
                                     <div class="course-icon">
-                                        <i class="fas fa-school"></i>
+                                        <i class="fas fa-chalkboard"></i>
                                     </div>
-                                    <span class="badge bg-success rounded-pill">
-                                        <i class="fas fa-users me-1"></i> {{ $course->enrollments_count ?? $course->enrollments->count() }} students
-                                    </span>
+                                    <div class="course-status">
+                                        @if($course->status === 'Active')
+                                            <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Active</span>
+                                        @else
+                                            <span class="badge bg-secondary"><i class="fas fa-pause me-1"></i> Inactive</span>
+                                        @endif
+                                    </div>
                                 </div>
-                                <h6 class="fw-bold mb-1">{{ $course->course_name }}</h6>
-                                <small class="text-muted d-block mb-2">{{ $course->course_code }}</small>
-                                <p class="small text-muted mb-2">{{ Str::limit($course->description ?? 'No description', 60) }}</p>
-                                <div class="d-flex gap-2 mt-2">
-                                    <a href="{{ route('courses.show', $course->course_id) }}" class="btn btn-sm btn-outline-primary flex-grow-1">
+                                <div class="course-card-body">
+                                    <h6 class="course-title">{{ $course->course_name }}</h6>
+                                    <div class="course-code">{{ $course->course_code }}</div>
+                                    <p class="course-description">{{ Str::limit($course->description ?? 'No description', 80) }}</p>
+                                    <div class="course-stats">
+                                        <div class="stat-item">
+                                            <i class="fas fa-users"></i>
+                                            <span>{{ $enrolledCount }} students</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <i class="fas fa-tasks"></i>
+                                            <span>{{ $totalAssignments }} assignments</span>
+                                        </div>
+                                    </div>
+                                    @if($totalAssignments > 0)
+                                        <div class="progress-wrapper mt-2">
+                                            <div class="progress-label">
+                                                <small>Published</small>
+                                                <small>{{ $progress }}%</small>
+                                            </div>
+                                            <div class="progress" style="height: 6px;">
+                                                <div class="progress-bar bg-primary" style="width: {{ $progress }}%"></div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                                <div class="course-card-footer">
+                                    <a href="{{ route('courses.show', $course->course_id) }}" class="btn btn-outline-primary btn-sm">
                                         <i class="fas fa-eye me-1"></i> View
                                     </a>
-                                    <a href="{{ route('assignments.index', ['course_id' => $course->course_id]) }}" class="btn btn-sm btn-outline-success">
+                                    <a href="{{ route('assignments.index', ['course_id' => $course->course_id]) }}" class="btn btn-primary btn-sm">
                                         <i class="fas fa-tasks me-1"></i> Tasks
                                     </a>
                                 </div>
                             </div>
                         </div>
                     @empty
-                        <div class="col-12 text-center py-4">
-                            <i class="fas fa-book fa-3x text-muted mb-2 opacity-25"></i>
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-book fa-3x text-muted mb-3 opacity-25"></i>
                             <p class="text-muted">No courses yet</p>
                             <a href="{{ route('courses.create') }}" class="btn btn-primary btn-sm">
                                 <i class="fas fa-plus me-1"></i> Create Course
@@ -151,6 +183,7 @@
                 </div>
             </div>
 
+            <!-- The rest of the dashboard (Recent Assignments, Submissions, Deadlines) remains unchanged -->
             <!-- Recent Activity Row -->
             <div class="row g-4 mb-4">
                 <div class="col-lg-6">
@@ -300,76 +333,78 @@
 </div>
 
 <style>
+/* ========== GLOBAL DASHBOARD STYLES ========== */
 .dashboard-container {
     min-height: calc(100vh - 56px);
 }
 
 .dashboard-layout {
     display: flex;
-    background: #f5f7fb;
+    background: #f8fafc;
     min-height: calc(100vh - 56px);
 }
 
-/* Sidebar */
+/* Sidebar (unchanged) */
 .dashboard-sidebar {
     width: 280px;
-    background: white;
+    background: #ffffff;
     display: flex;
     flex-direction: column;
     position: sticky;
     top: 56px;
     height: calc(100vh - 56px);
-    border-right: 1px solid #eef2f7;
-    box-shadow: 2px 0 8px rgba(0,0,0,0.02);
+    border-right: 1px solid #e2e8f0;
+    box-shadow: 2px 0 12px rgba(0, 0, 0, 0.02);
 }
 
 .sidebar-header {
-    padding: 25px 20px;
+    padding: 28px 20px;
     text-align: center;
-    border-bottom: 1px solid #eef2f7;
+    border-bottom: 1px solid #edf2f7;
 }
 
 .avatar-circle {
     width: 80px;
     height: 80px;
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 32px;
-    font-weight: bold;
+    font-weight: 700;
     color: white;
     margin: 0 auto;
-    box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+    box-shadow: 0 6px 14px rgba(79, 70, 229, 0.25);
 }
 
 .role-badge {
     padding: 5px 16px;
-    border-radius: 20px;
+    border-radius: 30px;
     font-size: 12px;
     font-weight: 600;
     display: inline-flex;
     align-items: center;
     gap: 5px;
 }
-.role-badge.teacher { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+.role-badge.teacher { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: white; }
 
 .sidebar-nav {
     flex: 1;
-    padding: 20px 0;
+    padding: 20px 12px;
 }
 
 .nav-item {
     display: flex;
     align-items: center;
-    padding: 12px 20px;
-    margin: 4px 12px;
-    color: #5a6e8a;
+    padding: 10px 16px;
+    margin: 4px 0;
+    color: #334155;
     text-decoration: none;
-    border-radius: 12px;
-    transition: all 0.25s ease;
+    border-radius: 14px;
+    transition: all 0.2s ease;
     font-size: 0.9rem;
+    font-weight: 500;
 }
 
 .nav-item i {
@@ -379,43 +414,49 @@
 }
 
 .nav-item:hover {
-    background: #f0f7ff;
-    color: #4facfe;
+    background: #f1f5f9;
+    color: #4f46e5;
     transform: translateX(4px);
 }
 
 .nav-item.active {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     color: white;
-    box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.nav-item.active i,
+.nav-item.active span {
+    color: white;
 }
 
 .nav-item .badge {
     margin-left: auto;
-    background: #dc3545;
+    background: #ef4444;
 }
 
 .sidebar-footer {
-    border-top: 1px solid #eef2f7;
+    border-top: 1px solid #edf2f7;
     padding: 12px 0;
 }
 
 /* Main Content */
 .dashboard-main {
     flex: 1;
-    padding: 25px 30px;
+    padding: 28px 32px;
     overflow-y: auto;
 }
 
 /* Welcome Banner */
 .welcome-banner {
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    border-radius: 20px;
-    padding: 25px 30px;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    border-radius: 24px;
+    padding: 28px 32px;
     color: white;
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);
 }
 
-/* Stats Grid */
+/* Stats Cards */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -424,24 +465,26 @@
 
 .stat-card {
     background: white;
-    border-radius: 20px;
+    border-radius: 24px;
     padding: 20px;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 16px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
     transition: all 0.3s ease;
+    border: 1px solid #f0f2f5;
 }
 
 .stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+    border-color: transparent;
 }
 
 .stat-icon {
     width: 55px;
     height: 55px;
-    border-radius: 14px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -449,32 +492,34 @@
     color: white;
 }
 
-.stat-icon.bg-primary { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-.stat-icon.bg-success { background: #28a745; }
-.stat-icon.bg-info { background: #17a2b8; }
-.stat-icon.bg-warning { background: #ffc107; }
+.stat-icon.bg-primary { background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); }
+.stat-icon.bg-success { background: #10b981; }
+.stat-icon.bg-info { background: #06b6d4; }
+.stat-icon.bg-warning { background: #f59e0b; }
 
 .stat-number {
-    font-size: 28px;
-    font-weight: 700;
+    font-size: 32px;
+    font-weight: 800;
     margin-bottom: 4px;
-    color: #2c3e50;
+    color: #1e293b;
 }
 
 .stat-label {
-    color: #7f8c8d;
-    font-size: 12px;
+    color: #64748b;
+    font-size: 11px;
     margin-bottom: 0;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
+    font-weight: 600;
 }
 
-/* Section Card */
+/* Section Card (generic) */
 .section-card {
     background: white;
-    border-radius: 20px;
+    border-radius: 24px;
     padding: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #f0f2f5;
 }
 
 .section-header {
@@ -483,69 +528,186 @@
     align-items: center;
     margin-bottom: 20px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #eef2f7;
+    border-bottom: 1px solid #edf2f7;
 }
 
 .section-header h5 {
     margin-bottom: 0;
-    font-weight: 600;
+    font-weight: 700;
     font-size: 1rem;
+    color: #1e293b;
 }
 
-/* Course Card */
+/* ========== IMPROVED COURSE CARDS ========== */
 .course-card {
-    background: #f8fafc;
-    border-radius: 14px;
-    padding: 15px;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
     transition: all 0.3s ease;
-    border: 1px solid transparent;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border: 1px solid #f0f2f5;
+    display: flex;
+    flex-direction: column;
 }
 
 .course-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    border-color: #e0e7ff;
-    background: white;
+    transform: translateY(-6px);
+    box-shadow: 0 20px 30px -12px rgba(0,0,0,0.12);
+    border-color: transparent;
+}
+
+.course-card-header {
+    padding: 16px 16px 8px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
 }
 
 .course-icon {
-    width: 45px;
-    height: 45px;
-    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
+    box-shadow: 0 6px 12px rgba(79, 70, 229, 0.2);
 }
 
-/* Activity Item */
+.course-status .badge {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+    border-radius: 30px;
+}
+
+.course-card-body {
+    padding: 8px 16px 12px;
+    flex: 1;
+}
+
+.course-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: #1e293b;
+}
+
+.course-code {
+    font-size: 0.7rem;
+    font-family: monospace;
+    background: #f1f5f9;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    color: #4f46e5;
+    margin-bottom: 10px;
+}
+
+.course-description {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.course-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+
+.stat-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: #475569;
+    background: #f8fafc;
+    padding: 4px 12px;
+    border-radius: 30px;
+}
+
+.stat-item i {
+    font-size: 0.75rem;
+    color: #4f46e5;
+}
+
+.progress-wrapper {
+    margin-top: 8px;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.65rem;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.course-card-footer {
+    padding: 12px 16px 16px;
+    display: flex;
+    gap: 10px;
+    border-top: 1px solid #f0f2f5;
+    background: #fafbfc;
+}
+
+.course-card-footer .btn {
+    flex: 1;
+    font-size: 0.75rem;
+    padding: 6px 0;
+    border-radius: 30px;
+}
+
+/* Activity items (unchanged) */
 .activity-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 14px 0;
+    border-bottom: 1px solid #f0f2f5;
 }
+.activity-item:last-child { border-bottom: none; }
 
-.activity-item:last-child {
-    border-bottom: none;
-}
-
-/* Table Styles */
+/* Table styles (unchanged) */
 .table th {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 600;
-    color: #6c757d;
+    letter-spacing: 0.6px;
+    font-weight: 700;
+    color: #475569;
     padding: 12px 8px;
 }
-
 .table td {
     vertical-align: middle;
     padding: 12px 8px;
+    font-size: 0.85rem;
+}
+
+/* Button improvements */
+.btn-primary {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    border: none;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 30px;
+    transition: all 0.2s ease;
+}
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+.btn-outline-primary {
+    border-radius: 30px;
+    border-color: #4f46e5;
+    color: #4f46e5;
+}
+.btn-outline-primary:hover {
+    background: #4f46e5;
+    color: white;
+    border-color: #4f46e5;
 }
 
 /* Responsive */
@@ -562,7 +724,7 @@
     .dashboard-sidebar { width: 100%; height: auto; position: relative; top: 0; flex-direction: row; flex-wrap: wrap; padding: 10px; align-items: center; }
     .sidebar-header { display: none; }
     .sidebar-nav { display: flex; flex-wrap: wrap; justify-content: center; padding: 0; }
-    .nav-item { padding: 8px 12px; margin: 4px; border-radius: 10px; }
+    .nav-item { padding: 8px 12px; margin: 4px; border-radius: 40px; }
     .nav-item span { display: inline; margin-left: 8px; }
     .dashboard-main { padding: 20px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }

@@ -20,6 +20,15 @@
                         <p class="mb-0"><strong>Submitted:</strong> {{ \Carbon\Carbon::parse($submission->submitted_at)->format('M d, Y H:i') }}</p>
                     </div>
 
+                    <!-- ADD THIS WARNING -->
+                    <div class="alert alert-warning border-2 mb-4">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Verify student:</strong> You are giving feedback to
+                        <strong>{{ $submission->student->full_name ?? 'N/A' }}</strong>
+                        (Submission #{{ $submission->submission_id }}).
+                        <br><small>Please ensure this is the correct student before saving.</small>
+                    </div>
+
                     <form method="POST" action="{{ route('feedbacks.store') }}">
                         @csrf
                         <input type="hidden" name="submission_id" value="{{ $submission->submission_id }}">

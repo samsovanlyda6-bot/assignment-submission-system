@@ -14,7 +14,7 @@ class AssignmentSeeder extends Seeder
             [
                 'assignment_id' => 1,
                 'course_id' => 1,
-                'title' => 'Calculator Program',
+                'title' => 'BSA',
                 'description' => 'Create a calculator using PHP with basic arithmetic operations',
                 'total_marks' => 100.00,
                 'start_date' => Carbon::now(),
@@ -28,7 +28,7 @@ class AssignmentSeeder extends Seeder
             [
                 'assignment_id' => 2,
                 'course_id' => 2,
-                'title' => 'Binary Tree Implementation',
+                'title' => 'DSAS',
                 'description' => 'Implement a binary search tree with insert, delete, and search operations',
                 'total_marks' => 100.00,
                 'start_date' => Carbon::now(),
@@ -54,14 +54,14 @@ class AssignmentSeeder extends Seeder
                 'updated_at' => now(),
             ],
         ];
-        
+
         foreach ($assignments as $assignment) {
             $exists = DB::table('assignments')->where('assignment_id', $assignment['assignment_id'])->exists();
             if (!$exists) {
                 DB::table('assignments')->insert($assignment);
             }
         }
-        
+
         $this->command->info('Assignments seeded successfully!');
     }
 }
